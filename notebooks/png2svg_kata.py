@@ -13,14 +13,55 @@ def _():
     return math, pytest
 
 
-@app.function
-def iter_hex_centers(width: int, height: int, size: float) :
-    #generate hexagon centers for image 
-    raise NotImplementedError
+@app.cell
+def _(math):
+    def iter_hex_centers(width: int, height: int, size: float) :
+        """generate hexagon centers for a given image""" 
+
+        if size <= 0 : 
+            raise ValueError("Size must be strictly positive")
+
+        #horizontal distance between 2 columns
+        horizontal_step = 1.5 * size 
+    
+        #vertical distance between 2 centers
+        vertical_step = math.sqrt(3) * size 
+
+        #distance to shift every other column
+        half_vertical_step = vertical_step/2
+
+        x = 0.0
+        column_index = 0
+
+        #generate columns until grid reaches beyond right edge 
+        while x < width + size :
+        
+            #odd columns start halfway 
+            #even columns start at y=0
+            if column_index % 2 :
+                y = half_vertical_step 
+            else: 
+                y = 0.0
+
+            #generate centers vertically within this column
+            while y <= height + half_vertical_step:
+
+                #return current hexagon center
+                yield(x,y)
+
+                #move down to next hexagon
+                y += vertical_step
+            
+            #move to next column
+            x += horizontal_step
+            column_index +=1
+        
+
+    return (iter_hex_centers,)
 
 
 @app.cell
-def _(math, pytest):
+def _(iter_hex_centers, math, pytest):
     def test_grid_covers_image(): 
         #generate hexagon centers for an image of 100 * 80 pixels
         #each hexagon has a size of 10
