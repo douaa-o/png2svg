@@ -8,10 +8,14 @@ app = marimo.App(width="medium")
 def _():
     import math
     import pytest 
-
-    import PIL.image 
+    from PIL import Image
 
     return
+
+
+@app.function
+def iter_hex_centers(width: int, height: int, size: float) :
+    raise NotImplementedError
 
 
 if __name__ == "__main__":
