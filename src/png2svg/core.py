@@ -83,11 +83,10 @@ def sample_color(
 
                 # read RGB color of current pixel
                 pixel = img.getpixel((x, y))
-                
-                
+
                 if isinstance(pixel, tuple) and len(pixel) == 3:
                     red, green, blue = pixel
-                    
+
                     red_sum += red
                     green_sum += green
                     blue_sum += blue
