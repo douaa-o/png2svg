@@ -91,6 +91,20 @@ def _(iter_hex_centers, math, pytest):
         with pytest.raises(ValueError):
             list(iter_hex_centers(60, 60, 0))
 
+    return
+
+
+@app.cell
+def _(Image):
+    def sample_color(img: Image.Image, cx: float, cy: float, size: float, step: int=1) -> tuple[int, int, int]: 
+        """"Sample the average colour inside a hexagon"""
+        #cx and cy the hexagon center coordinates 
+        #step is the distance between sampled pixels; default=1
+    
+        raise NotImplementedError 
+
+    return
+
 
 if __name__ == "__main__":
     app.run()
