@@ -217,29 +217,85 @@ def _(mo):
     return
 
 
-@app.function
-def hexagon_points(cx: float, cy: float, size: float) -> list[tuple[float, float]]:
-    """Return the six corner points of a hexagon"""
-    #cx, cy position of the center
-    #size = distance from the center to each corner 
-    raise NotImplementedError
+@app.cell
+def _(math):
+    def hexagon_points(cx: float, cy: float, size: float) -> list[tuple[float, float]]:
+        """Return the six corner points of a hexagon"""
+        #cx, cy position of the center
+        #size = distance from the center to each corner 
+
+        points = []
+
+        #generate 6 corners, spaced 60 degrees apart
+        for i in range(6):
+            angle = math.radians(60*i)
+
+            #corner coordinates
+            x = cx + size * math.cos(angle)
+            y = cy + size * math.sin(angle)
+
+            points.append((x,y))
+
+        return points
+
+    return (hexagon_points,)
 
 
 @app.cell
-def _(Image):
+def _(Image, hexagon_points, iter_hex_centers, sample_color):
     def build_svg(img: Image.Image, size: float, step: int=1, scale: int=1) -> str :
         """Generate SVG image from a Pillow Image"""
         #size = distance from hexagon center to each corner 
         #step = distance between sampled pixels when averging colors
         #scale = multiplier for output SVG dimensions
     
-        raise NotImplementedError
+        width, height = img.size 
+
+        lines = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            (
+                f'<svg xmlns="http://www.w3.org/2000/svg" '
+                f'width="{width * scale}" '
+                f'height="{height * scale}" '
+                f'viewBox ="0 0 {width} {height}">'
+            ),
+        ]
+
+        #generate one polygon for each hexagon center
+        for cx, cy in iter_hex_centers(width, height, size):
+
+            #sample average color
+            red, green, blue = sample_color(img,cx,cy,size,step)
+
+            #format RGB color as hexadecimal string 
+            color = f"#{red:02x}{green:02x}{blue:02x}"
+
+            #calculate the 6 corner points
+            points = hexagon_points(cx,cy,size)
+
+            #format points with 2 decimal places
+            points_string = " ".join(
+                f"{x:.2f}, {y:.2f}" for x, y in points
+            )
+
+            #add polygon to SVG 
+            lines.append(
+                f'<polygon points="{points_string}" '
+                f'fill="{color}" '
+                f'stroke="{color}" '
+                f'stroke-width="0.5"/>'
+            )
+
+        #close SVG document
+        lines.append("</svg>")
+
+        return "\n".join(lines)
 
     return (build_svg,)
 
 
 @app.cell
-def _(ET, Image, build_svg, math, pytest):
+def _(ET, Image, build_svg, hexagon_points, math, pytest):
     def test_hexagon_corners():
         points = hexagon_points(50,50,10)
 
@@ -264,7 +320,7 @@ def _(ET, Image, build_svg, math, pytest):
 
         #find all polygon elements in SVG namespace
         namespace = "{http://www.w3.org/2000/svg}"
-        polygons = root.findball(f".//{namespace}polygon")
+        polygons = root.findall(f".//{namespace}polygon")
 
         #check SVG contains more than 10 polygons
         assert len(polygons) > 10
