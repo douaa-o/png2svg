@@ -7,10 +7,10 @@ app = marimo.App(width="medium")
 @app.cell
 def _():
     import math
-
     import pytest
+    from PIL import Image
 
-    return math, pytest
+    return Image, math, pytest
 
 
 @app.cell
@@ -95,25 +95,67 @@ def _(iter_hex_centers, math, pytest):
 
 
 @app.cell
-def _(Image):
+def _(Image, math):
     def sample_color(img: Image.Image, cx: float, cy: float, size: float, step: int=1) -> tuple[int, int, int]: 
         """"Sample the average colour inside a hexagon"""
         #cx and cy the hexagon center coordinates 
         #step is the distance between sampled pixels; default=1
     
-        raise NotImplementedError 
+        #convert image to RGB format 
+        img = img.convert("RGB")
 
-    return
+        width, height = img.size 
+
+        #radius of sampling area in the hexagon
+        radius = size * math.sqrt(3)/2
+        int_radius = max(1, int(radius))
+
+        #initialization
+        red_sum = 0
+        green_sum = 0
+        blue_sum = 0
+
+        count = 0 #number of sampled pixels
+
+        #loop vertically 
+        for dy in range(-int_radius, int_radius + 1, step):
+
+            #loop horizontally
+            for dx in range(-int_radius, int_radius + 1, step): 
+
+                #check whether the point is inside the circle 
+                if dx*dx + dy*dy <= radius * radius or count == 0:
+
+                    #pixel coordinates
+                    x = int(cx+dx)
+                    y = int(cy+dy)
+
+                    #keep coordinates inside image boundaries
+                    x = max(0, min(x,width-1))
+                    y = max(0, min(y,height-1))
+
+                    #read RGB color of current pixel
+                    pixel = img.getpixel((x,y))
+
+                    red_sum += pixel[0]
+                    green_sum += pixel[1]
+                    blue_sum += pixel[2]
+
+                    count +=1
+
+        return(red_sum//count, green_sum//count, blue_sum//count)
+
+    return (sample_color,)
 
 
 @app.cell
-def _(Image, sample_colour):
+def _(Image, sample_color):
     def test_uniform_color():
         # Create a 40*40 RGB image filled with one colour
         img = Image.new("RGB", (40,40), (10,20,30))
 
         # Sample colour at the center of image
-        res = sample_colour(img,20,20,8)
+        res = sample_color(img,20,20,8)
 
         #every samplex pixel has the same colour
         assert res == (10,20,30)
@@ -122,7 +164,7 @@ def _(Image, sample_colour):
         img = Image.new("RGB", (10,10), (200,100,50))
 
         #sample outside the image 
-        res = sample_colour(img, -5,-5,8)
+        res = sample_color(img, -5,-5,8)
 
         #coordinates outside image should be handled safely
         #use nearest valid pixel 
@@ -136,7 +178,7 @@ def _(Image, sample_colour):
         white_half = Image.new("RGB",(10,20), (255,255,255))
         img.paste(white_half, (10,0))
 
-        res = sample_colour(img,10,10,8)
+        res = sample_color(img,10,10,8)
 
         #average should be grey : red = green = blue 
         assert res[0] == res[1] == res[2]
