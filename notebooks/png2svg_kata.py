@@ -106,5 +106,46 @@ def _(Image):
     return
 
 
+@app.cell
+def _(Image, sample_colour):
+    def test_uniform_color():
+        # Create a 40*40 RGB image filled with one colour
+        img = Image.new("RGB", (40,40), (10,20,30))
+
+        # Sample colour at the center of image
+        res = sample_colour(img,20,20,8)
+
+        #every samplex pixel has the same colour
+        assert res == (10,20,30)
+
+    def test_outside_img(): 
+        img = Image.new("RGB", (10,10), (200,100,50))
+
+        #sample outside the image 
+        res = sample_colour(img, -5,-5,8)
+
+        #coordinates outside image should be handled safely
+        #use nearest valid pixel 
+        assert res == (200,100,50)
+
+    def test_average_half():
+        #create 20*20 black RGB image
+        img = Image.new("RGB", (20,20), (0,0,0))
+
+        #create white image section
+        white_half = Image.new("RGB",(10,20), (255,255,255))
+        img.paste(white_half, (10,0))
+
+        res = sample_colour(img,10,10,8)
+
+        #average should be grey : red = green = blue 
+        assert res[0] == res[1] == res[2]
+
+        #grey colore between 100 and 155
+        assert 100 <= res[0] <= 155
+
+    return
+
+
 if __name__ == "__main__":
     app.run()
