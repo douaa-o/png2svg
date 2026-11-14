@@ -12,8 +12,9 @@ def _():
     import pytest
 
     from PIL import Image
+    import xml.etree.ElementTree as ET #for SVG tests (XML parser)
 
-    return Image, math, mo, pytest
+    return ET, Image, math, mo, pytest
 
 
 @app.cell(hide_code=True)
@@ -219,6 +220,8 @@ def _(mo):
 @app.function
 def hexagon_points(cx: float, cy: float, size: float) -> list[tuple[float, float]]:
     """Return the six corner points of a hexagon"""
+    #cx, cy position of the center
+    #size = distance from the center to each corner 
     raise NotImplementedError
 
 
@@ -226,7 +229,61 @@ def hexagon_points(cx: float, cy: float, size: float) -> list[tuple[float, float
 def _(Image):
     def build_svg(img: Image.Image, size: float, step: int=1, scale: int=1) -> str :
         """Generate SVG image from a Pillow Image"""
+        #size = distance from hexagon center to each corner 
+        #step = distance between sampled pixels when averging colors
+        #scale = multiplier for output SVG dimensions
+    
         raise NotImplementedError
+
+    return (build_svg,)
+
+
+@app.cell
+def _(ET, Image, build_svg, math, pytest):
+    def test_hexagon_corners():
+        points = hexagon_points(50,50,10)
+
+        #hexagon must have 6 corners
+        assert len(points) == 6
+
+        #every corner must be 10 units from the centers 
+        for x,y in points:
+        
+            #straight-line distance 
+            distance = math.hypot(x-50, y-50)
+            assert distance == pytest.approx(10)
+
+
+    def test_svg_valid_xml_polygons():
+        img = Image.new("RGB", (60,40),(255,0,0))
+
+        svg = build_svg(img, size=10)
+
+        #parse the svg as XML
+        root = ET.fromstring(svg)
+
+        #find all polygon elements in SVG namespace
+        namespace = "{http://www.w3.org/2000/svg}"
+        polygons = root.findball(f".//{namespace}polygon")
+
+        #check SVG contains more than 10 polygons
+        assert len(polygons) > 10
+
+        #check that first polygon is red
+        assert polygons[0].get("fill") == "#ff0000"
+
+    def test_scale():
+        img = Image.new("RGB", (60,40), (255,0,0))
+
+        svg = build_svg(img, size=10, scale=4)
+
+        root = ET.fromstring(svg)
+
+        #SVG width sclaed from 60 to 240 
+        assert root.get("width") == "240"
+
+        #check viewBox keeps original image dimensions 
+        assert root.get("viewBox") == "0 0 60 40"
 
     return
 
