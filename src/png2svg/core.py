@@ -1,9 +1,9 @@
 """Core functions for converting images into hexagonal SVGs"""
 
 import math
+from pathlib import Path
 
 from PIL import Image
-from pathlib import Path
 
 
 def iter_hex_centers(width: int, height: int, size: float):
@@ -122,7 +122,7 @@ def format_color(red: int, green: int, blue: int) -> str:
     return f"#{red:02x}{green:02x}{blue:02x}"
 
 
-def build_svg(img: Image.Image, size: float, step: int = 1, scale: int = 1) -> str:
+def build_svg(img: Image.Image, size: float, step: int = 1, scale: float = 1) -> str:
     """Generate SVG image from a Pillow Image"""
     # size = distance from hexagon center to each corner
     # step = distance between sampled pixels when averging colors
@@ -168,16 +168,20 @@ def build_svg(img: Image.Image, size: float, step: int = 1, scale: int = 1) -> s
     return "\n".join(lines)
 
 
-
-def convert(input_path: Path, output_path: Path, size: float=10, step: int=1, scale: float=1) -> Path:
+def convert(
+    input_path: Path,
+    output_path: Path,
+    size: float = 10,
+    step: int = 1,
+    scale: float = 1,
+) -> Path:
     """Convert an input image into SVG file"""
-    
+
     # open input image
     with Image.open(input_path) as img:
         # generate SVG content
         svg_content = build_svg(img, size=size, step=step, scale=scale)
-    
+
     # write SVG using UTF-8 encoding
     output_path.write_text(svg_content, encoding="utf-8")
     return output_path
-    
