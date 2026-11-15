@@ -29,7 +29,9 @@ def build_parser() -> argparse.ArgumentParser:
     # Add output scale option
     # 1 by default
     parser.add_argument("--scale", type=float, default=1, help="Output scale")
-
+    
+    # Add hexagon orientation option
+    parser.add_argument("--orientation", choices = ("flat", "pointy"), default = "flat", help="Hexagon orientation")
     return parser
 
 
@@ -74,7 +76,7 @@ def main(argv: list[str] | None = None) -> int:
         output_path = args.input.with_suffix(".svg")
 
     # Convert input image into SVG file
-    convert(args.input, output_path, size=args.size, step=args.step, scale=args.scale)
+    convert(args.input, output_path, size=args.size, step=args.step, scale=args.scale, orientation = args.orientation)
 
     # Display success message with output file path
     print(f"wrote {output_path}")
