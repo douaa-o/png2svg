@@ -21,11 +21,13 @@ def _(mo):
     # widget for uploading an image
     upload = mo.ui.file(filetypes=[".png", ".jpg", ".jpeg"], label="Upload and image")
 
-    # Slider to choose hexagon size 
+    # Slider to choose hexagon size
     size_slider = mo.ui.slider(start=3, stop=60, value=10, label="Hexagon size")
 
     # Dropdown to choose hexagon orientation
-    orientation_dropdown = mo.ui.dropdown(options=["flat", "pointy"], value="flat", label="Orientation")
+    orientation_dropdown = mo.ui.dropdown(
+        options=["flat", "pointy"], value="flat", label="Orientation"
+    )
 
     # Display all three controls
     mo.vstack([upload, size_slider, orientation_dropdown])
@@ -34,21 +36,23 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(Image, build_svg, io, mo, orientation_dropdown, size_slider, upload):
-    svg = None 
+    svg = None
 
     # stop here if no image has been uploaded
     if not upload.value:
         preview = mo.md("Please upload a PNG or JPG image to get started")
-    
-    else: 
-        # Read uploaded image 
+
+    else:
+        # Read uploaded image
         img_bytes = upload.value[0].contents
         img = Image.open(io.BytesIO(img_bytes))
 
-        svg = build_svg(img, size = size_slider.value, orientation = orientation_dropdown.value)
+        svg = build_svg(
+            img, size=size_slider.value, orientation=orientation_dropdown.value
+        )
 
-        # Remove XML declaration because mo.Html expects SVG markup 
-        svg_content = svg.split("\n",1)[1] if svg.startswith("<?xml") else svg
+        # Remove XML declaration because mo.Html expects SVG markup
+        svg_content = svg.split("\n", 1)[1] if svg.startswith("<?xml") else svg
 
         # Display the generated SVG
         preview = mo.Html(svg_content)
@@ -61,8 +65,13 @@ def _(Image, build_svg, io, mo, orientation_dropdown, size_slider, upload):
 def _(mo, svg):
     # Only display the download button when an image is uploaded
     if svg is not None:
-        download_button = mo.download(data=svg.encode("utf-8"), filename="converted_image.svg", mimetype="image/svg+xml", label="Download SVG")
-    
+        download_button = mo.download(
+            data=svg.encode("utf-8"),
+            filename="converted_image.svg",
+            mimetype="image/svg+xml",
+            label="Download SVG",
+        )
+
     else:
         download_button = mo.md("Upload an image to enable SVG download")
 
