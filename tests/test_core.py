@@ -5,9 +5,10 @@ import xml.etree.ElementTree as ET
 
 import pytest
 from PIL import Image
+from pathlib import Path
 
 from png2svg.core import build_svg, hexagon_points, iter_hex_centers, sample_color
-
+from png2svg import convert
 
 def test_grid_covers_image() -> None:
     # generate hexagon centers for an image of 100 * 80 pixels
@@ -129,3 +130,22 @@ def test_scale() -> None:
 
     # check viewBox keeps original image dimensions
     assert root.get("viewBox") == "0 0 60 40"
+
+
+
+def test_convert_writes_svg(tmp_path: Path) -> None:
+    """Check a small red RGB image"""
+    img = Image.new("RGB", (30,30), (255,0,0))
+    
+    # save image as png in pytest's temporary directory
+    src = tmp_path / "input.png"
+    img.save(src)
+    
+    # choose output svg path
+    out = tmp_path / "output.svg"
+    
+    # convert the png to svg 
+    convert(src, out, size=6)
+    
+    # read generated svg file and check its xml declaration
+    assert out.read_text(encoding="utf-8").startswith("<?xml")
