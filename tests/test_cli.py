@@ -78,3 +78,26 @@ def test_zero_size(tmp_path: Path) -> None:
     res = main([str(png_path), "--size", "0"])
 
     assert res == 2
+    
+
+def test_parser_default_orientation()-> None: 
+    """Check default orientation is flat"""
+    
+    parser = build_parser()
+    
+    # Parse minimal set of arguments 
+    args = parser.parse_args(["input.png"])
+    
+    assert args.orientation == "flat"
+
+def test_pointy_orientation_option(tmp_path: Path)-> None:
+    """Check that the CLI accepts pointy orientation"""
+    png_path = create_png(tmp_path)
+    
+    res = main([str(png_path), "--orientation", "pointy"])
+    
+    # Check succesful execution
+    assert res == 0 
+    
+    # Check SVG output created
+    assert png_path.with_suffix(".svg").is_file()
