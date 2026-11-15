@@ -151,41 +151,40 @@ def test_convert_writes_svg(tmp_path: Path) -> None:
     assert out.read_text(encoding="utf-8").startswith("<?xml")
 
 
-
-def test_pointy_top_grid()-> None:
+def test_pointy_top_grid() -> None:
     """Check horizontal shift between pointy-top rows"""
-    
+
     # Generate hexagon centers with pointy orientation
     centers = list(iter_hex_centers(50, 50, 10, orientation="pointy"))
-    
+
     # Get x coordinates of centers on first row (y=0)
-    first_row_x = [x for x,y in centers if y == 0]
-    
+    first_row_x = [x for x, y in centers if y == 0]
+
     # Get x coordinates of centers of the second row (y=15)
-    second_row_x = [x for x,y in centers if y == 15]
-    
-    expected_shift = math.sqrt(3) * 10/2 
-    
+    second_row_x = [x for x, y in centers if y == 15]
+
+    expected_shift = math.sqrt(3) * 10 / 2
+
     # first center of the second row must be shifted
     assert second_row_x[0] == pytest.approx(first_row_x[0] + expected_shift)
 
 
-def test_invalid_orientation()-> None:
-    """"Check that unknown orientation raises ValueError"""
-    
+def test_invalid_orientation() -> None:
+    """ "Check that unknown orientation raises ValueError"""
+
     with pytest.raises(ValueError):
-        list(iter_hex_centers(50, 50, 10, orientation ="diamond"))
+        list(iter_hex_centers(50, 50, 10, orientation="diamond"))
 
 
-def test_flat_hexagon_edges()-> None : 
+def test_flat_hexagon_edges() -> None:
     """Check that a flat hexagon has horizontal top and bottom edges"""
-    
+
     # Generate the 6 corners of a flat hexagon
-    points = hexagon_points(0, 0, 10, orientation = "flat")
-    
+    points = hexagon_points(0, 0, 10, orientation="flat")
+
     # Extract and sort y coordinates
     y_values = sorted(y for x, y in points)
-    
+
     # The two lowest and two highest y coordinates must be equal
     assert y_values[0] == pytest.approx(y_values[1])
     assert y_values[-1] == pytest.approx(y_values[-2])

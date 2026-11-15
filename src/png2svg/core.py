@@ -7,14 +7,15 @@ from PIL import Image
 
 ORIENTATIONS = ("flat", "pointy")
 
+
 def iter_hex_centers(width: int, height: int, size: float, orientation: str = "flat"):
     """Generate hexagon centers for a given image"""
-    
-    # Check valide orientation 
+
+    # Check valide orientation
     if orientation not in ORIENTATIONS:
         raise ValueError(f"Unknown orientation {orientation}")
-    
-    if orientation == "flat": 
+
+    if orientation == "flat":
         if size <= 0:
             raise ValueError("Size must be strictly positive")
 
@@ -48,35 +49,34 @@ def iter_hex_centers(width: int, height: int, size: float, orientation: str = "f
             # move to next column
             x += horizontal_step
             column_index += 1
-    
-    
+
     # Pointy top grid : rows are 1.5 * size apart
-    else : 
-        horizontal_step = math.sqrt(3) * size 
-        vertical_step = 1.5 * size 
-        
-        y = 0.0 
+    else:
+        horizontal_step = math.sqrt(3) * size
+        vertical_step = 1.5 * size
+
+        y = 0.0
         row_index = 0
-        
+
         while y < height + size:
-            # Shift every second row horizontally 
-            if row_index % 2 : 
-                x_offset = horizontal_step / 2 
-            else : 
+            # Shift every second row horizontally
+            if row_index % 2:
+                x_offset = horizontal_step / 2
+            else:
                 x_offset = 0.0
-                
+
             x = x_offset
-            
+
             while x < width + horizontal_step:
-                # return hexagon center 
-                yield(x,y)
-                
-                # move to the next hexagon horizontally 
+                # return hexagon center
+                yield (x, y)
+
+                # move to the next hexagon horizontally
                 x += horizontal_step
-            
-            # Move down to the next row 
+
+            # Move down to the next row
             y += vertical_step
-            row_index +=1
+            row_index += 1
 
 
 def limit(value: int, minimum: int, maximum: int) -> int:
@@ -132,21 +132,23 @@ def sample_color(
     return (red_sum // count, green_sum // count, blue_sum // count)
 
 
-def hexagon_points(cx: float, cy: float, size: float, orientation: str = "flat") -> list[tuple[float, float]]:
+def hexagon_points(
+    cx: float, cy: float, size: float, orientation: str = "flat"
+) -> list[tuple[float, float]]:
     """Return the six corner points of a hexagon"""
     # cx, cy position of the center
     # size = distance from the center to each corner
-    
-    if orientation not in ORIENTATIONS: 
+
+    if orientation not in ORIENTATIONS:
         raise ValueError(f"Unknown orientation: {orientation}")
-    
+
     if orientation == "flat":
         angle_offset = 0
-        
-    else : 
+
+    else:
         # if "pointy" rotate hexagon by -30 degrees
         angle_offset = -30
-        
+
     points = []
 
     # generate 6 corners, spaced 60 degrees apart
@@ -167,7 +169,13 @@ def format_color(red: int, green: int, blue: int) -> str:
     return f"#{red:02x}{green:02x}{blue:02x}"
 
 
-def build_svg(img: Image.Image, size: float, step: int = 1, scale: float = 1, orientation: str = "flat") -> str:
+def build_svg(
+    img: Image.Image,
+    size: float,
+    step: int = 1,
+    scale: float = 1,
+    orientation: str = "flat",
+) -> str:
     """Generate SVG image from a Pillow Image"""
     # size = distance from hexagon center to each corner
     # step = distance between sampled pixels when averging colors
@@ -213,13 +221,22 @@ def build_svg(img: Image.Image, size: float, step: int = 1, scale: float = 1, or
     return "\n".join(lines)
 
 
-def convert(input_path: Path, output_path: Path, size: float = 10, step: int = 1,scale: float = 1, orientation: str = "flat") -> Path:
+def convert(
+    input_path: Path,
+    output_path: Path,
+    size: float = 10,
+    step: int = 1,
+    scale: float = 1,
+    orientation: str = "flat",
+) -> Path:
     """Convert an input image into SVG file"""
 
     # open input image
     with Image.open(input_path) as img:
         # generate SVG content
-        svg_content = build_svg(img, size=size, step=step, scale=scale, orientation = orientation)
+        svg_content = build_svg(
+            img, size=size, step=step, scale=scale, orientation=orientation
+        )
 
     # write SVG using UTF-8 encoding
     output_path.write_text(svg_content, encoding="utf-8")
