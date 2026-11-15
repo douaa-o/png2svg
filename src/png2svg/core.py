@@ -3,6 +3,7 @@
 import math
 
 from PIL import Image
+from pathlib import Path
 
 
 def iter_hex_centers(width: int, height: int, size: float):
@@ -165,3 +166,18 @@ def build_svg(img: Image.Image, size: float, step: int = 1, scale: int = 1) -> s
     lines.append("</svg>")
 
     return "\n".join(lines)
+
+
+
+def convert(input_path: Path, output_path: Path, size: float=10, step: int=1, scale: float=1) -> Path:
+    """Convert an input image into SVG file"""
+    
+    # open input image
+    with Image.open(input_path) as img:
+        # generate SVG content
+        svg_content = build_svg(img, size=size, step=step, scale=scale)
+    
+    # write SVG using UTF-8 encoding
+    output_path.write_text(svg_content, encoding="utf-8")
+    return output_path
+    
