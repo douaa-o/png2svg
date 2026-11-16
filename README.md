@@ -73,13 +73,7 @@ from png2svg import convert
 input_path = Path("screenshot.png")
 output_path = Path("wallpaper.svg")
 
-convert(
-    input_path, 
-    output_path, 
-    size=10, 
-    step=1, 
-    scale=1, 
-    orientation="flat")
+convert(input_path, output_path, size=10, step=1, scale=1, orientation="flat")
 ```
 The `convert()`function reads the input image, generates the SVG, saves it to the specified output path and returns the output path. 
 
